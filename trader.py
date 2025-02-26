@@ -14,11 +14,11 @@ data = bt.feeds.YahooFinanceCSVData(
     # Do not pass values before this date
     fromdate=datetime.datetime(2000, 1, 1),
     # Do not pass values after this date
-    todate=datetime.datetime(2000, 12, 31),
+    todate=datetime.datetime(2000, 3, 31),
     reverse=False)
 cerebro.adddata(data)
 
-# cerebro.adddata(TestStratge)
+cerebro.addstrategy(TestStrategy)
 print('Starting Portfolio Value: %.2f' %cerebro.broker.getvalue())
 cerebro.run()
 print('Final Portfolio Value: %.2f' %cerebro.broker.getvalue())
