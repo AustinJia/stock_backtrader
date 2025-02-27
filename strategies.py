@@ -29,16 +29,16 @@ class TestStrategy(bt.Strategy):
                 self.log('SELL EXECUTED, %.2F' % order.executed.price)
 
             self.bar_executed = len(self)
-            print('*********BUY/SELLL: bar_executed: ', self.bar_executed)
+            # print('*********BUY/SELLL: bar_executed: ', self.bar_executed)
 
         elif order.status in [order.Canceled, order.Margin, order.Rejected]:
             self.log('Order Canceled/Margin/Rejected')
         self.order = None
 
     def next(self):
-        print(len(self))
-        if len(self) < 10:
-            print(self.position)
+        # print(len(self))
+        # if len(self) < 10:
+        #     print(self.position)
         # Simply log the closing price of the series from the reference
         self.log('Close, %.2f' % self.dataclose[0])
 
@@ -53,7 +53,7 @@ class TestStrategy(bt.Strategy):
                     # previous close less than the previous close
                     # BUY, BUY, BUY!!! (with all possible default parameters)
                     self.log('BUY CREATE, %.2f' % self.dataclose[0])
-                    print('[-2]:', self.dataclose[-2], '[-1]:', self.dataclose[-1], '[0]:', self.dataclose[0])
+                    # print('[-2]:', self.dataclose[-2], '[-1]:', self.dataclose[-1], '[0]:', self.dataclose[0])
                     self.order = self.buy()
         else:
         # Already in the market ... we might sell
