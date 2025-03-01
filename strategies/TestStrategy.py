@@ -1,4 +1,5 @@
 import backtrader as bt
+from common.utilities import *
 
 # Create a Stratey
 class TestStrategy(bt.Strategy):
@@ -63,3 +64,64 @@ class TestStrategy(bt.Strategy):
                 self.log('SELL CREATED {}'.format(self.dataclose[0]))
                 # Keep track of the created order to avoid a 2nd order
                 self.order = self.sell()
+
+
+# Create a Stratey
+class MovingAvgStrategy(bt.Strategy):
+
+    def log(self, txt, dt=None):
+        ''' Logging function fot this strategy'''
+        dt = dt or self.datas[0].datetime.date(0)
+        print('%s, %s' % (dt.isoformat(), txt))
+
+    def __init__(self):
+        # Keep a reference to the "close" line in the data[0] dataseries
+        self.dataclose = self.datas[0].close
+        self.data_50_average = self.dataclose[-50:].mean()
+        # self.data_200_average = self.dataclose[-200:].mean()
+        self.sma = self.indicator.SMA(self.dataclose, period=self.p.period)
+        self.order = None
+
+    def notify_order(self, order):
+        # order doesn't executed
+        if order.status in [order.Submitted, order.Accepted]:
+            return
+        
+        # Check if an order has been completed
+        # Attention: broker could reject order if not enough cash
+        if order.status in [order.Completed]:
+            if order.isbuy():
+                self.log('BUY EXECUTED, %.2F' % order.executed.price)
+            elif order.issell():
+                self.log('SELL EXECUTED, %.2F' % order.executed.price)
+
+            self.bar_executed = len(self)
+            # print('*********BUY/SELLL: bar_executed: ', self.bar_executed)
+
+        elif order.status in [order.Canceled, order.Margin, order.Rejected]:
+            self.log('Order Canceled/Margin/Rejected')
+        self.order = None
+
+    
+
+    def next(self):
+        # print(len(self))
+        # if len(self) < 10:
+        #     print(self.position)
+        # Simply log the closing price of the series from the reference
+        self.log('Close, %.2f' % self.dataclose[0])
+
+        if self.order:
+            return 
+        
+        match processing_signal(self.data_50_average[-1], self.data_50_average[0], self.data_200_average[-1], self.data_200_average[0]):
+            case "BUY":
+                self.log('BUY CREATE, %.2f' % self.dataclose[0])
+                self.order = self.buy()
+            case "SELL":
+                if not self.position:
+                    self.log('SELL CREATED {}'.format(self.dataclose[0]))
+                    self.order = self.sell()
+            case "IDLE":
+                print("asdfsd")
+                # self.log('Wait, be patient')
